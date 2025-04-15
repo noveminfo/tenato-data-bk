@@ -40,5 +40,8 @@ module App
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # エラーディレクトリを自動ロードパスに追加
+    config.autoload_paths += %W[#{config.root}/app/errors]
   end
 end
