@@ -1,23 +1,22 @@
 class ApplicationController < ActionController::API
-  include ActionController::HttpAuthentication::Token::ControllerMethods
-
   before_action :authenticate_user!
-
+  
   private
 
   def authenticate_user!
-    unless current_user
+    header = request.headers['Authorization']
+    token = header.split(' ').last if header
+    
+    begin
+      decoded = AuthService.decode_token(token)
+      @current_user = User.find(decoded['user_id'])
+    rescue ActiveRecord::RecordNotFound
       render json: { error: 'Unauthorized' }, status: :unauthorized
     end
   end
 
   def current_user
-    @current_user ||= begin
-      authenticate_with_http_token do |token, _options|
-        payload = AuthenticationService.decode_token(token)
-        User.find_by(id: payload['user_id']) if payload
-      end
-    end
+    @current_user
   end
 
   def current_organization
