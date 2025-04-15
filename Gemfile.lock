@@ -202,6 +202,10 @@ GEM
     rake (13.2.1)
     rdoc (6.13.1)
       psych (>= 4.0.0)
+    redis (5.4.0)
+      redis-client (>= 0.22.0)
+    redis-client (0.24.0)
+      connection_pool
     reline (0.6.1)
       io-console (~> 0.5)
     rspec-core (3.13.3)
@@ -253,6 +257,7 @@ DEPENDENCIES
   puma
   rack-cors
   rails (~> 7.1.0)
+  redis
   rspec-rails
   shoulda-matchers
 

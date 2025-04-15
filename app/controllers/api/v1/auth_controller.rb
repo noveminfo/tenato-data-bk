@@ -23,6 +23,16 @@ module Api
           render json: { error: 'Invalid email or password' }, status: :unauthorized
         end
       end
+
+      def logout
+        token = request.headers['Authorization']&.split(' ')&.last
+        if token
+          AuthService.invalidate_token(token)
+          render json: { message: 'Successfully logged out' }
+        else
+          render json: { error: 'No token provided' }, status: :bad_request
+        end
+      end
     end
   end
 end

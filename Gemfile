@@ -11,6 +11,8 @@ gem 'jwt'
 gem 'rack-cors'  # この行が確実に含まれていることを確認
 gem 'jbuilder'
 gem 'bootsnap', require: false
+# Redis for token blacklisting
+gem 'redis'
 
 # Ruby 3.2対応のため追加
 gem 'irb'
