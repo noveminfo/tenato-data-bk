@@ -10,6 +10,15 @@ module Api
         }
       end
 
+      def charts
+        render json: {
+          import_trends: import_trends_chart,
+          status_distribution: status_distribution_chart,
+          hourly_activity: hourly_activity_chart,
+          data_source_performance: data_source_performance_chart
+        }
+      end
+
       private
 
       def organization_summary
@@ -82,6 +91,82 @@ module Api
         histories.group_by_day(:created_at, last: 30)
           .count
           .transform_keys { |k| k.strftime('%Y-%m-%d') }
+      end
+
+      def import_trends_chart
+        data = ImportHistory.joins(data_source: :organization)
+          .where(data_sources: { organization_id: current_organization.id })
+          .group_by_day(:created_at, last: 30)
+          .count
+          .transform_keys { |k| k.strftime('%Y-%m-%d') }
+
+        ChartDataFormatter.format_time_series(
+          data,
+          label: 'Daily Imports',
+          fill: true
+        )
+      end
+
+      def status_distribution_chart
+        data = ImportHistory.joins(data_source: :organization)
+          .where(data_sources: { organization_id: current_organization.id })
+          .group(:status)
+          .count
+
+        ChartDataFormatter.format_pie_chart(data)
+      end
+
+      def hourly_activity_chart
+        data = ImportHistory.joins(data_source: :organization)
+          .where(data_sources: { organization_id: current_organization.id })
+          .group_by_hour_of_day(:created_at)
+          .count
+          .transform_keys { |k| "#{k}:00" }
+
+        ChartDataFormatter.format_bar_chart(
+          data,
+          label: 'Hourly Import Activity'
+        )
+      end
+
+      def data_source_performance_chart
+        data = current_organization.data_sources.map do |source|
+          {
+            name: source.name,
+            success_rate: source.success_rate,
+            total_imports: source.import_histories.count,
+            total_rows: source.import_histories.sum(:processed_rows)
+          }
+        end
+
+        {
+          labels: data.map { |d| d[:name] },
+          datasets: [
+            {
+              label: 'Success Rate (%)',
+              data: data.map { |d| d[:success_rate] },
+              type: 'line',
+              yAxisID: 'percentage'
+            },
+            {
+              label: 'Total Imports',
+              data: data.map { |d| d[:total_imports] },
+              type: 'bar',
+              yAxisID: 'count'
+            }
+          ],
+          axes: {
+            percentage: {
+              min: 0,
+              max: 100,
+              position: 'left'
+            },
+            count: {
+              min: 0,
+              position: 'right'
+            }
+          }
+        }
       end
     end
   end

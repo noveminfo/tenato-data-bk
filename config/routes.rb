@@ -13,6 +13,7 @@ Rails.application.routes.draw do
 
       namespace :dashboard do
         get :summary
+        get :charts
       end
     end
   end
