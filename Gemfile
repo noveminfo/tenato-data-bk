@@ -22,6 +22,9 @@ gem 'logger'
 gem 'sidekiq'
 gem 'sidekiq-scheduler'
 
+# For date grouping in queries
+gem 'groupdate'
+
 group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'

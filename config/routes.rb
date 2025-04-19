@@ -10,6 +10,10 @@ Rails.application.routes.draw do
       post 'auth/login', to: 'auth#login'
       delete 'auth/logout', to: 'auth#logout'
       resources :users
+
+      namespace :dashboard do
+        get :summary
+      end
     end
   end
 
