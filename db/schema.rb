@@ -10,9 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_15_055918) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_19_023735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "data_sources", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.string "source_type", null: false
+    t.string "status", default: "active"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_data_sources_on_organization_id"
+  end
+
+  create_table "import_histories", force: :cascade do |t|
+    t.bigint "data_source_id", null: false
+    t.string "file_name", null: false
+    t.string "status", default: "pending"
+    t.integer "total_rows", default: 0
+    t.integer "processed_rows", default: 0
+    t.integer "error_rows", default: 0
+    t.json "error_details"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["data_source_id"], name: "index_import_histories_on_data_source_id"
+  end
 
   create_table "organizations", force: :cascade do |t|
     t.string "name"
@@ -32,5 +55,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_15_055918) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
+  add_foreign_key "data_sources", "organizations"
+  add_foreign_key "import_histories", "data_sources"
   add_foreign_key "users", "organizations"
 end

@@ -18,6 +18,10 @@ gem 'redis'
 gem 'irb'
 gem 'logger'
 
+# Background Job
+gem 'sidekiq'
+gem 'sidekiq-scheduler'
+
 group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
