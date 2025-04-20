@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_19_073930) do
+ActiveRecord::Schema[7.1].define(version: 2025_04_20_031115) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -67,7 +67,24 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_19_073930) do
 
   create_table "organizations", force: :cascade do |t|
     t.string "name"
-    t.string "plan"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "plan_id"
+    t.string "subscription_status", default: "trial"
+    t.datetime "trial_ends_at"
+    t.json "settings"
+    t.json "usage_limits"
+    t.index ["plan_id"], name: "index_organizations_on_plan_id"
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.string "name", null: false
+    t.json "features", null: false
+    t.decimal "monthly_price", precision: 10, scale: 2, null: false
+    t.integer "max_users"
+    t.integer "max_data_sources"
+    t.integer "max_storage_gb"
+    t.boolean "api_access_enabled", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -87,5 +104,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_19_073930) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "data_sources", "organizations"
   add_foreign_key "import_histories", "data_sources"
+  add_foreign_key "organizations", "plans"
   add_foreign_key "users", "organizations"
 end

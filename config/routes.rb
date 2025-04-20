@@ -15,6 +15,11 @@ Rails.application.routes.draw do
         get :summary
         get :charts
       end
+
+      namespace :tenant do
+        get :show
+        patch :update_settings
+      end
     end
   end
 
