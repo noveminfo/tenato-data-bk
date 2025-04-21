@@ -24,6 +24,10 @@ module Api
         end
       end
 
+      def me
+        render json: user_response_data(current_user)
+      end
+
       def logout
         token = request.headers['Authorization']&.split(' ')&.last
         if token
@@ -32,6 +36,18 @@ module Api
         else
           render json: { error: 'No token provided' }, status: :bad_request
         end
+      end
+
+      private
+
+      def user_response_data(user)
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          organization_id: user.organization_id,
+          created_at: user.created_at
+        }
       end
     end
   end

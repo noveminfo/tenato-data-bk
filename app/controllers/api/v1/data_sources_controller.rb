@@ -62,6 +62,15 @@ module Api
         render json: { error: e.message }, status: :internal_server_error
       end
 
+      def import_history
+        @histories = ImportHistory.joins(data_source: :organization)
+                                .where(data_sources: { organization_id: current_organization.id })
+                                .order(created_at: :desc)
+                                .includes(:data_source)
+        
+        render json: @histories, include: :data_source
+      end
+
       # インポート状況確認エンドポイント
       def import_status
         begin
