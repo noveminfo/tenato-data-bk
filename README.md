@@ -1213,11 +1213,124 @@ Authorization: Bearer <your_token>
 
 ### 10.5 エラーレスポンス
 
-すべてのエンドポイントは以下のエラーレスポンスを返す場合があります：
+#### 10.5.1 標準エラーレスポンス形式
 
-#### 401 Unauthorized
+システムは以下の形式で一貫したエラーレスポンスを返します：
 
 ```json
 {
-  "
+  "error": "エラーの詳細メッセージ"
+}
 ```
+
+より詳細な情報が必要な場合は、以下のような拡張形式も使用されます：
+
+```json
+{
+  "error": {
+    "message": "エラーの詳細メッセージ",
+    "details": {
+      "field_name": ["エラーの詳細"]
+    }
+  }
+}
+```
+
+#### 10.5.2 一般的なエラーパターン
+
+1. **認証エラー** (401 Unauthorized)
+
+```json
+{
+  "error": "Invalid token" または "User not found"
+}
+```
+
+2. **リソース不在エラー** (404 Not Found)
+
+```json
+{
+  "error": "Record not found"
+}
+```
+
+3. **バリデーションエラー** (422 Unprocessable Entity)
+
+```json
+{
+  "error": {
+    "message": "Validation failed",
+    "details": {
+      "field_name": ["エラーの詳細"]
+    }
+  }
+}
+```
+
+#### 10.5.3 エラーハンドリングの実装
+
+API はエラー発生時に適切な HTTP ステータスコードと共に、明確なエラーメッセージを返します：
+
+1. **認証・認可エラー**
+
+   - 401: 認証が必要、または認証情報が無効
+   - 403: アクセス権限が不足
+
+2. **クライアントエラー**
+
+   - 400: リクエストが不正
+   - 404: リソースが存在しない
+   - 422: バリデーションエラー
+
+3. **サーバーエラー**
+   - 500: 内部サーバーエラー
+   - 503: サービス利用不可
+
+#### 10.5.4 エラー処理のベストプラクティス
+
+1. **クライアント側での推奨される対応**
+
+   - エラーレスポンスの `error` メッセージをユーザーに適切に表示
+   - 認証エラー（401）発生時は再ログインを促す
+   - ネットワークエラー時は適切なリトライ処理を実装
+
+2. **API プロバイダー側での実装**
+   - すべてのエラーを一貫した形式で返す
+   - デバッグに有用な情報を含める（開発環境のみ）
+   - センシティブな情報は決して含めない
+   - 適切な HTTP ステータスコードを使用
+
+#### 10.5.5 実装例
+
+```ruby
+# ApplicationControllerでのエラーハンドリング
+class ApplicationController < ActionController::API
+  rescue_from ::AuthenticationError, with: :handle_authentication_error
+  rescue_from ActiveRecord::RecordNotFound, with: :handle_record_not_found
+
+  private
+
+  def handle_authentication_error(error)
+    render json: { error: error.message }, status: :unauthorized
+  end
+
+  def handle_record_not_found(error)
+    render json: { error: 'Record not found' }, status: :not_found
+  end
+end
+```
+
+#### 10.5.6 エラー監視とログ
+
+1. **ログ記録**
+
+   - すべてのエラーを適切なログレベルで記録
+   - エラーの発生コンテキストを含める
+   - エラートラッキングシステムと連携
+
+2. **モニタリング**
+   - エラーレートの監視
+   - 特定のエラータイプの増加を検知
+   - アラート設定による早期発見
+
+エラーレスポンスは、API の品質と使いやすさに直接影響を与える重要な要素です。明確で一貫性のあるエラーハンドリングにより、クライアントアプリケーションの実装が容易になり、問題解決が効率化されます。
